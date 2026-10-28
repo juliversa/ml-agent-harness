@@ -1,0 +1,4 @@
+Source: the owner's own ROGII records (post-mortem submission table, endgame and final-pick notes); dates as recorded; replay with `python3 examples/replay.py examples/rogii-wellbore`. Lower is better (RMSE, feet).
+In: the submissions from the gate week (07-24) to the deadline with public score and full-773-well leak-free OOF CV (entered as folds=5 so the 5-fold checks read it; the last five CVs are the recorded estimates, "≈"); `.goldcut` 5.518 = public gold cut on record (08-05); `.lbnoise` 0.168 = paired SD of a public difference, first recorded 08-07 (after the deadline).
+`known.csv` (point in time, read by `examples/replay.py`): both values enter the replay only from those dates; the dotfiles hold them for a direct watcher run.
+Redacted: original notes (replaced by a short source note), user names, kernel and submission refs, long change descriptions (shortened); v28 has no absolute CV on record (left empty); no other value changed.

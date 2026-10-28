@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Offline stand-in for the Kaggle CLI 2.x, used by the tests in tests/. Never touches the network.
+case "$1 $2" in
+  "--version ") echo "Kaggle CLI 2.2.3" ;;
+  "kernels list") printf 'ref,title\nme/k1,K1\nme/k10,K10\n' ;;
+  "kernels status") echo "me/x has status \"KernelWorkerStatus.${FAKE_STATUS:-COMPLETE}\"" ;;
+  "kernels output") while [ $# -gt 0 ]; do [ "$1" = -p ] && touch "$2/out.csv" && printf '%s' "${FAKE_LOG:-}" > "$2/k1.log"; shift; done ;;
+  "kernels push") [ -n "${FAKE_PUSH_EXTRA:-}" ] && echo "$FAKE_PUSH_EXTRA"; echo "Kernel version ${FAKE_VERSION-7} successfully pushed.  Please check progress at https://www.kaggle.com/code/me/k1" ;;
+  "competitions submit") echo "Successfully submitted to demo" ;;
+  "competitions submissions") printf '%b\n' "${FAKE_SUBS:-No submissions found}" ;;
+esac

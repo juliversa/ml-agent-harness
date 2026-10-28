@@ -1,0 +1,9 @@
+date,id,column,value,source
+2026-10-07,.goldcut,,0.959,first public gold cut on record (round-1 facts)
+2026-10-16,.lbnoise,,0.004,first paired public-difference SD on record (P12: .002-.004)
+2026-10-16,e010,oof_mean,0.8992,10-16 rescoring of every sub on one label set (P12b)
+2026-10-16,e014,oof_mean,0.9310,10-16 rescoring (P12b)
+2026-10-16,e042,oof_mean,0.9347,10-16 rescoring (P12b)
+2026-10-16,A1,oof_mean,0.9421,10-16 rescoring (P12b)
+2026-10-16,G1-5f,oof_mean,0.9479,10-16 rescoring (P12b)
+2026-10-16,X-5f,oof_mean,0.9530,10-16 rescoring (P12b)

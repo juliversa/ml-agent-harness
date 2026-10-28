@@ -1,0 +1,19 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install numpy matplotlib
+      - name: syntax
+        run: |
+          for f in kit/*.sh kit/video/*.sh tests/*.sh tests/bin/kaggle; do bash -n "$f"; done
+          python -m py_compile kit/*.py kit/hooks/*.py kit/templates/train.py kit/video/engine.py tests/*.py
+          python -c "import json; json.load(open('kit/settings.example.json'))"
+      - name: gates (offline, fake Kaggle CLI)
+        run: python -m unittest discover -s tests -v
+      - name: demo
+        run: bash tests/demo.sh

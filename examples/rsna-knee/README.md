@@ -1,0 +1,6 @@
+Source: the owner's own RSNA knee records (experiments log to day 10, the 10-16 rescoring of every submission on one label set, the submission history); dates as recorded; replay with `python3 examples/replay.py examples/rsna-knee`.
+In: the kept rows of the log, plus the 5-fold submissions with public scores; `oof_mean` as logged that day (empty for A1, G1-5f, X-5f: no OOF in the log then); `parent` filled only where the record names the control.
+`known.csv` (point in time, read by `examples/replay.py`): the 10-16 rescoring of every sub on one label set (pooled OOF), `.goldcut` .959 from 10-07 (first public gold cut on record), `.lbnoise` .004 from 10-16 (upper end of the first recorded paired public Δ SD, .002–.004). The `.goldcut` and `.lbnoise` files hold the final values for a direct watcher run.
+Row e000 is the forked public notebook, a 5-stage ensemble (public .943).
+Redacted: original notes (replaced by a short source note), user names, kernel and submission refs, long change descriptions (shortened); kind `base` → `floor`; e000's label names the ensemble; `bftr6zr` (a build name) → `label-rounds`; no other value changed.
+e000 was not retrained by us: it ran the public notebook on its authors' weights, as a control (it predates today's floor rule, which retrains).

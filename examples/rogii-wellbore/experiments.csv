@@ -1,0 +1,11 @@
+id,date,change,kind,folds,parent,mechanism,oof_mean,oof_hard,public,gpu_h,kept,note
+v24,2026-07-24,own-GR confidence gate (NN ranker off),model,5,v22,hard-well confidence gate,7.3304,,6.662,,Y,oof = full-773 leak-free OOF
+v27,2026-07-24,v24 + own-gradient flank emission,model,5,v24,flank emission,6.7626,,5.998,,Y,oof = full-773 leak-free OOF (an earlier note: 6.8311)
+v28,2026-07-25,v27 + AVG-blend emission,model,5,v27,blend two reference curves,,,6.101,,N,no absolute CV on record
+pnbpost,2026-07-29,v27 + gated parallel-neighbour datum correction,postproc,5,v27,neighbour datum,6.7529,,5.998,,N,champion stayed v27
+pscont,2026-08-04,v27 + 0.25 x start-gap shift,postproc,5,v27,start discontinuity,6.7335,,5.995,,Y,
+blend,2026-08-05,2-member PF emission blend,ensemble,5,pscont,decorrelated members,6.65,,6.082,,N,oof = full-773 estimate (approx)
+ens-deploy,2026-08-05,mean of 3 PF variants,ensemble,5,pscont,decorrelated members,6.59,,6.106,,N,oof = full-773 estimate (approx)
+ens2,2026-08-05,mean of 3 decorrelated PF emissions,ensemble,5,pscont,decorrelated members,6.48,,6.161,,N,oof = full-773 estimate (approx)
+ens2thr,2026-08-05,ens2 + threshold combine (code path missing),ensemble,5,ens2,threshold combine,6.48,,6.161,,N,byte-identical to ens2 (bug)
+ens3,2026-08-05,mean of 2 decorrelated rescuers,ensemble,5,ens2,decorrelated members,6.45,,6.070,,Y,oof = full-773 estimate (approx); final pick

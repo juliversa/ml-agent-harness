@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Offline stand-in for curl, used by tests/test_watcher.py (kit/notify.sh). Logs its last two args (message, URL); never touches the network.
+[ -n "${FAKE_CURL_LOG:-}" ] && echo "${@: -2:1} -> ${@: -1}" >> "$FAKE_CURL_LOG"
+exit 0

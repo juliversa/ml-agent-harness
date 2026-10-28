@@ -1,0 +1,100 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(kaggle kernels push:*)",
+      "Bash(kaggle kernels update:*)",
+      "Bash(kaggle k push:*)",
+      "Bash(kaggle k update:*)",
+      "Bash(kaggle competitions submit:*)",
+      "Bash(kaggle c submit:*)",
+      "Bash(kaggle datasets delete:*)",
+      "Bash(kaggle kernels delete:*)",
+      "Bash(gh repo delete:*)"
+    ],
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(kaggle:*)",
+      "Bash(bash kit/*)",
+      "Bash(COMP_SLUG=* bash kit/*)",
+      "Bash(COMP_ROOT=* nohup bash kit/watcher.sh*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(tail:*)",
+      "Bash(head:*)",
+      "Bash(date:*)",
+      "Bash(timeout:*)",
+      "Bash(cp kit/templates/*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/kit/session_start.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/kit/hooks/guard_command.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/kit/hooks/check_read.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/kit/hooks/check_brief.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/kit/hooks/check_python.py"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/kit/hooks/check_stop.py"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/kit/hooks/check_context.py"
+          }
+        ]
+      }
+    ]
+  }
+}

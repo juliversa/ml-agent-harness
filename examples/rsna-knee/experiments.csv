@@ -1,0 +1,18 @@
+id,date,change,kind,folds,parent,mechanism,oof_mean,oof_hard,public,gpu_h,kept,note
+e000,2026-10-01,public 5-stage ensemble notebook (control),floor,,,public 5-stage ensemble,,,0.943,0.5,Y,
+e001,2026-10-01,vit_small 224 fold0,model,1,,own model for blend,0.854,,,0.45,Y,
+e003,2026-10-01,coatnet_rmlp_1 224 fold0,model,1,,hybrid conv-attn backbone,0.8674,,,1.8,Y,
+e005,2026-10-01,coatnet_rmlp_1 224 fold0 site folds,model,1,,base of record fold0,0.8482,,,1.9,Y,
+e007,2026-10-02,coatnet_rmlp_1 224 fold1 site folds,model,1,,base of record fold1,0.8321,,,1.9,Y,
+e009,2026-10-02,k_eval 24->42 at inference (fold1),runtime,1,,more slice coverage at test,0.8353,,,0,Y,
+e010,2026-10-03,coat1 site 5-fold + k_eval 42,model,5,e008,fold averaging + coverage,0.8388,,0.892,0.3,Y,oof as logged that day (5-fold mean OOF); the 10-16 rescore is in known.csv
+e011,2026-10-03,TPU training parity (fold0),runtime,1,e005,TPU = GPU,0.8471,,,,Y,
+e012,2026-10-03,dense corpus 72 slots (fold0),data,1,e011,more slices,0.8561,,,,Y,
+e013,2026-10-03,round-1 soft targets (fold0),target,1,e005,label noise,0.8821,,,2.2,Y,
+e014,2026-10-04,dense corpus + round-1 labels (5 folds),data,5,e012,stack e012 + e013,0.8726,,0.909,8.6,Y,oof as logged that day (5-fold mean OOF); the 10-16 rescore is in known.csv
+e025,2026-10-06,new cache + backbone LR (fold0),model,1,e014,cache + backbone LR,0.8919,,0.920,0,Y,single-fold public 0.920
+e028,2026-10-06,same config on another platform (fold0),infra,1,e026,hardware reproducibility,0.8912,,,0,Y,
+e042,2026-10-07,n_base 5-fold ensemble,model,5,e025,fold averaging,0.9381,,0.922,0.1,Y,oof as logged that day (5-fold mean OOF); the 10-16 rescore is in known.csv
+A1,2026-10-10,label-rounds recipe (5 folds + all-data),model,5,,label rounds + routed zoom,,,0.944,,Y,no OOF on record that day; the 10-16 rescore is in known.csv
+G1-5f,2026-10-14,simple ConvNeXt-T recipe (5 folds),model,5,,simple modern recipe,,,0.947,,Y,no OOF on record that day; the 10-16 rescore is in known.csv
+X-5f,2026-10-15,X recipe (5 folds),model,5,,recipe X,,,0.951,,Y,no OOF on record that day; the 10-16 rescore is in known.csv
