@@ -6,7 +6,7 @@ I built this harness to run Claude Code as a solo Kaggle competitor. Its core id
 Kaggle, with earlier versions of this agent and my steering: silver (125th of 6,191) and two bronzes across five competitions of about 3,500–6,425 teams. This version is built from their failures and has not yet run a full competition; `examples/` replays two of them through it.
 
 - **How you use it:** join a competition on kaggle.com, run `claude` in this repo and type `Join <slug>, deadline YYYY-MM-DD`. The agent scaffolds `competitions/<slug>/`, trains, and can push or submit only through the `kit/` scripts; you answer only a short list of owner decisions ([Quickstart](#quickstart)).
-- 123 offline tests run in CI; `bash tests/demo.sh` shows the gates refusing in seconds, with no Kaggle login.
+- 127 offline tests run in CI; `bash tests/demo.sh` shows the gates refusing in seconds, with no Kaggle login.
 - Guard rails, not a sandbox: run the agent in a container or VM (this one ran in Docker).
 - Numbers that are not in `examples/` come from my private competition records.
 
@@ -29,8 +29,10 @@ Checked 1 kernels; 1 UNHARVESTED, 0 unreadable.
 ▸ A submission file with a missing value (kit/submit_gate.py)
   ABORT: 1 rows with missing/NaN values, first at line 3
 ▸ One watcher pass with nine 5-fold subs whose public score falls as CV rises
-tier 2 (digest.md):
-  [ruler] ruler: CV vs public over 9 subs: slope -0.47 (CV rises while the public score falls)
+tier 1 (events.log; the Stop hook sends the agent back to ack them):
+  ALERT [k-me_k1-complete] kernel me/k1 complete
+  ALERT [ruler-…] ruler: CV vs public over 9 subs: slope -0.47 (CV rises while the public score falls)
+  ALERT [noerr-e9] noerr: rows e1 e2 e3 e4 e5 e6 e7 e8 e9 have oof_mean but no eda/err-<id>.md: run skill autopsy on each (…)
 … (ack flow: see `tests/demo.sh`)
 ```
 
@@ -88,9 +90,20 @@ Each part, where it lives, and its honest limit.
 - **GPU gate** (`kit/push_and_watch.sh`). A fresh reviewer signs a GO bound to the plan's hash (sha256 of the plan without its Verdict lines), so any edit after review voids it. It also wants a plan signed in the last 24 h, a saved sample batch (> 1 KB) and, for a big idea, a file describing its strongest version. Kaggle CLI options pass through an allow-list (the CLI accepts prefixes such as `--pa` for `--path`). Limit: the GO binds the text, not who wrote it (no separate reviewer key).
 - **Submit gate** (`kit/submit_gate.py`). Refuses a submission without a CV number (or a stated reason), over 2 a day, with a repeated description, or without a finished kernel with a clean log (code competitions) or a file matching the sample (file competitions). Unreadable input means refuse.
 - **Hooks** (`kit/hooks/`). Block direct `kaggle kernels push` / `competitions submit`, destructive deletes, making anything public, whole reads of files > 40 KB and helper briefs missing the coding rules; send the agent back once on unacked urgent alerts; ask for a handoff past 150k tokens of context. `guard_command.py` has one named check per blocked action behind `check(cmd)`. Limit: guard rails, not a sandbox; regexes stop the direct shortcuts and the gate scripts are the real control, so run the agent in a container.
-- **Watcher, no LLM** (`kit/watcher.sh`, checks in `kit/exps.py`). Every 5 minutes, 11 kinds of alert: kernel done or failed, idle GPU, token budget, slow progress, CV and public board disagreeing, and more. Urgent alerts must be acked (`kit/ack.sh`). It rewrites `STATUS.md` and meters tokens, context and cost per finding (`kit/agentmeter.py`).
+- **Watcher, no LLM** (`kit/watcher.sh`, checks in `kit/exps.py`). Every 5 minutes, 16 kinds of alert: kernel done or failed, idle GPU, token budget, slow progress, CV and public board disagreeing, a stuck lead (table below), and more. Urgent alerts land in `events.log`; the Stop hook sends the agent back once per stop until each is acked (`kit/ack.sh`). The step-back alerts, `ruler` and `plateau` fire once per state, day or week, not every 3 h, so acks stay meaningful; stepback and loop, which ask for a new angle, go quiet at the day −10 freeze. It rewrites `STATUS.md` and meters tokens, context and cost per finding (`kit/agentmeter.py`).
 - **Keeper, from cron** (`kit/keeper.py`). Restarts a dead watcher or a stuck lead within the token budget and stops after two restarts that made no progress; a few push notifications a day (ntfy).
 - **Arm vs control** (`kit/compare.py`). Per-fold Δ and the Nadeau–Bengio corrected t: B is read as above its control only if t ≥ 2, no fold is negative and pooled Δ ≥ 0. Once seed noise is measured, `--bootstrap` reads instead on a paired group bootstrap of the pooled Δ plus that training noise; in simulation it false-passes less than the fold bar and catches more true gains while training noise is small. It also prints Δ on a frozen hard slice. Limit: a screening bar, not a significance test; `kit/sim_bar.py` measures what it misses (a one-fold-SD gain passes about 1 in 3) and how often it false-passes.
+- **Step-back alerts** (urgent; the watcher, checks in `kit/exps.py`). A working lead that stops making progress is sent back to the data:
+
+  | alert | fires when | what the agent does |
+  |---|---|---|
+  | `stuck-time` | `FINDINGS.md` unchanged for 3 h (again every 12 h) while > 1M tokens were spent and no kernel runs | skill `autopsy` on the latest scored run (20 worst, 10 clean, 10 random items); before the first, hand-read raw items |
+  | `stuck-tokens` | every 5M tokens since `FINDINGS.md` last changed | the same |
+  | `loop` | one mechanism failed 3 times since its last kept change (each no better than its parent's CV) | next run is a new angle at a lower level: data, labels, metric, loss |
+  | `noerr` | a kept or lever row has a CV but no `eda/err-<id>.md` (daily until it exists) | read that run's failing items (skill `autopsy`) |
+  | `stepback` | no `intel/stepback-<date>.md` in 72 h | write one: the biggest untried lever and one thing no top-10 team uses |
+
+  The keeper does not restart an idle lead for `stuck-*`; they are about a lead that is working. Limits: tokens are price-weighted and counted over all Claude projects on the account (the usage limit is account-wide), so run one lead per account; `noerr` checks that the file exists, not that it was read; an ack takes any reason.
 - **Tests** (`tests/`). Offline against a fake Kaggle CLI (`tests/bin/`): gate refusals, hook blocks, watcher alerts, the statistics, the replays, and the docs' own IDs and counts.
 
 ## How it works
@@ -138,7 +151,7 @@ Permissions and hooks are in `kit/settings.example.json`; `.claude/` (your `sett
 | `PLAYBOOK.md` | the method: a weekly review loop, a week-by-week plan, 14 rules of thumb (laws), the records the watcher reads |
 | `GLOSSARY.md` | the terms used across the docs, in plain English |
 | `LESSONS.md` | five competitions compared with winners' or top-team write-ups (AIMO3: forum); 35 lessons (25 in the table + a 10-item checklist); priors by problem type |
-| `TOOLING.md` | 24 Kaggle and compute traps, symptom → fix |
+| `TOOLING.md` | 27 Kaggle and compute traps, symptom → fix |
 | `skills/` | the agent's procedures: run, submit, `red-team-run` (signs the GO), `hostile-review`, autopsy, post-mortem, `explainer-video`, and others |
 | `kit/` | the code above: gates, watcher + `ack.sh`, hooks, `compare.py`, `exps.py`, `agentmeter.py`, `keeper.py`, `fanout.py`, `pick_items.py`, `sim_bar.py`; also harvest, linters, `graphs.py`, templates, the scaffold, the video engine |
 | `tests/` | offline tests of the gates, watcher and hooks; `demo.sh` |

@@ -112,7 +112,8 @@ def keep(c):
         with open(c / "keeper.md", "a") as fh:
             fh.write(f"{time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(NOW))} · {action} · {why}{noted}\n")
 
-    alerts = open_alerts(c) if (c / "events.log").exists() else []
+    alerts = [l for l in (open_alerts(c) if (c / "events.log").exists() else [])   # stuck-* are about a working lead:
+              if " ALERT [stuck-" not in l]                                         # an idle one is restarted for the rest or 24 h quiet
     idle = lead_idle_h()
     if idle >= 2:
         hb = watcher_dead(c)

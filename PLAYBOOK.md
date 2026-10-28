@@ -130,12 +130,15 @@ On demand: `LESSONS.md` › Priors by problem type. Rows cite their evidence. Re
   and incumbent use `folds=5` rows). `kind`: `floor` · `base` · `family5f` (leaders' family, 5 folds) · `scale` · `pseudo` (note `na: <reason>` allowed)
   · `lever` · `edge`. A number not in this file does not count. `oof_mean`: the CV score (host metric on pooled OOF, not a mean of fold scores; the name is historical).
 - `kernels.txt`; `.entry .deadline .kref .lower .goldcut`; `.lbnoise` (the LB noise).
+- Step-back (tier 1): `eda/err-<id>.md` per scored kept or lever row (D5 samples: id, label, pred, path, cause; alert `noerr`); 3 `kept=N` rows on one
+  mechanism since its last kept=Y, none beating its parent's CV → a new angle at a lower level (alert `loop`); `FINDINGS.md` changed within 3 h of
+  work (> 1M tokens, no kernel running) and within 5M tokens (alerts `stuck-time`, `stuck-tokens`); `intel/stepback-<date>.md` every 72 h (law 6, alert `stepback`).
+  `mechanism` is a short fixed tag per idea (the loop check groups by it). Stepback and loop stop at the day −10 freeze.
 - `plans/<kernel slug>.md` for GPU/TPU pushes: `kind: <kind>`; `kind: lever` also `lever: <D2 id>` + `elite-spec: plans/elite-<id>.md`
   (file exists); last Verdict line `Verdict: GO sha256=<plan hash>` written by the reviewer (else `push_and_watch.sh` exit 6).
 
 **Conventions (not checked by code):**
-- 3× `kept=N` on one mechanism → change the lever. `kind=floor` row and `intel/writeups.md` (≥ 3 URLs) by day 2; `eda/look-d0.md` + `eda/look-d0-*` by day 3.
-- `eda/err-<id>.md` per kept or lever row (D5 samples: id, label, pred, path, cause).
+- `kind=floor` row and `intel/writeups.md` (≥ 3 URLs) by day 2; `eda/look-d0.md` + `eda/look-d0-*` by day 3.
 - `FINDINGS.md` `| id | date | decision | number (folds, SD) | example ids | verdict |` (example ids never empty; a closed/dead
   verdict names its `kind=lever` id, law 8).
 - `STATE.md` D-lines `- D<n> <name>: <value>`: never `—`; D1 has a number, D3 `mechanism:`, D5 `ids:`; depth-check ≤ 8 d old;

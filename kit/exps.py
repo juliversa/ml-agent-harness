@@ -4,8 +4,9 @@
   python3 kit/exps.py <comp> <days left>
 
 Prints "<n 5-fold rows with oof_mean+public> <bad csv lines, comma-separated, 0 if none> <ruler failure or na>
-<plateau message or ->", tab-separated (messages hold spaces). Direction: <comp>/.lower == 1 = lower is better."""
-import csv, datetime as dt, math, re, sys
+<plateau message or -> <looping mechanism@row id or -> <ids with no error file or ->", tab-separated (messages hold spaces). Direction: <comp>/.lower == 1 = lower is better."""
+import csv, datetime as dt, math, os, re, sys
+from collections import Counter
 from statistics import median
 
 
@@ -116,6 +117,38 @@ def plateau(kept, gold_cv, days_left, today, sign):
     return f"best oof_mean not improved for {flat} d" if flat >= 7 else "-"
 
 
+def safe(s):
+    return re.sub(r"[^A-Za-z0-9_.-]", "_", (s or "").strip())
+
+
+def loops(rows, sign):
+    """'<mechanism>@<id>' when the idea and 2 variants failed (R9): 3 kept=N rows on one mechanism since its last kept=Y,
+    each with a CV no better than its parent's at the same folds. A kept=N row that beat its parent was superseded, not a failure."""
+    cv, folds = {r.get("id"): num(r.get("oof_mean")) for r in rows}, {r.get("id"): r.get("folds") for r in rows}
+    fails, out = Counter(), {}
+    for r in rows:
+        m = safe(r.get("mechanism")).lower()
+        if not m:
+            continue
+        if is_kept(r):
+            fails[m] = 0
+        elif (r.get("kept") or "").strip().lower() in ("n", "no"):
+            v, p = num(r.get("oof_mean")), cv.get(r.get("parent"))
+            same = folds.get(r.get("parent")) == r.get("folds")                 # a 1-fold screen is not read against a 5-fold CV
+            if v is not None and p is not None and same and v * sign <= p * sign:
+                fails[m] += 1
+                if fails[m] >= 3:
+                    out[m] = safe(r.get("id"))
+    return [f"{m}@{i}" for m, i in out.items() if fails[m] >= 3]
+
+
+def no_error_file(comp, rows):
+    """Ids of scored kept or lever rows with no eda/err-<id>.md: nobody read their failing items (PLAYBOOK §7, D5)."""
+    return [i for i in dict.fromkeys(safe(r.get("id")) for r in rows if num(r.get("oof_mean")) is not None
+                                     and (is_kept(r) or (r.get("kind") or "").strip() == "lever"))
+            if i and not os.path.exists(f"{comp}/eda/err-{i}.md")]
+
+
 def main(comp, days_left):
     hdr, body, rows = load(comp)
     pairs = scored(rows)
@@ -124,7 +157,8 @@ def main(comp, days_left):
             if num(r.get("oof_mean")) is not None and five_fold(r) and is_kept(r)]
     today = dt.datetime.now(dt.timezone.utc).date()
     pl = plateau(kept, cut_in_cv(num(read(comp, ".goldcut")), pairs), days_left, today, sign)
-    print(len(pairs), ",".join(bad_lines(hdr, body, rows)) or 0, ruler(pairs, num(read(comp, ".lbnoise"))), pl, sep="\t")
+    print(len(pairs), ",".join(bad_lines(hdr, body, rows)) or 0, ruler(pairs, num(read(comp, ".lbnoise"))), pl,
+          ",".join(loops(rows, sign)) or "-", ",".join(no_error_file(comp, rows)) or "-", sep="\t")
 
 
 if __name__ == "__main__":

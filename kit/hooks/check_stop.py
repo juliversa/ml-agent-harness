@@ -59,7 +59,7 @@ if __name__ == "__main__":
             dead.append(f"{c.name}: heartbeat .tokens_today {age}"
                         + f"\n    restart: COMP_ROOT='{root}' nohup bash {WATCHER} {c.name} >/dev/null 2>&1 &")   # relative to the project dir, as the allow rule
         if new:
-            todo.append(f"{c.name} ({len(new)}): " + " | ".join(l.split(" ALERT ", 1)[1][:90] for l in new[-3:])
+            todo.append(f"{c.name} ({len(new)}): " + " | ".join(l.split(" ALERT ", 1)[1][:300] for l in new[-3:])
                         + f"\n    COMP_SLUG={c.name} bash kit/ack.sh <key> <exp-id|reason>")
     msg = (["Unacked tier-1 ALERT lines. Act on each, then ack it (R30):\n  " + "\n  ".join(todo)] if todo else []) \
         + (["Watcher dead (a dead watcher writes no ALERT lines). Restart it:\n  " + "\n  ".join(dead)] if dead else [])

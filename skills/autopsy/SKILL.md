@@ -5,7 +5,7 @@ description: Read real failing examples one by one to find why the model fails, 
 # autopsy
 Find the mechanism behind the errors by reading real failing items at the lowest level, then confirm any measured delta before acting on it.
 
-Needs: `<comp>/experiments.csv`, OOF predictions, `kit/pick_items.py`, the clean-truth subset if one exists. Output per experiment: `<comp>/eda/err-<id>.md`, one per kept or lever row of `experiments.csv` (PLAYBOOK §7; a convention, not checked by code).
+Needs: `<comp>/experiments.csv`, OOF predictions, `kit/pick_items.py`, the clean-truth subset if one exists. Output per experiment: `<comp>/eda/err-<id>.md`, one per kept or lever row with a CV in `experiments.csv` (PLAYBOOK §7; else the watcher raises `noerr`).
 
 Switch here when sweeps sit inside noise, every sweep's best setting is the one you already ship, or lanes close faster than the score rises: the answer is not in the space you search. This is step D5 of the Depth loop (PLAYBOOK §1, the weekly checklist).
 

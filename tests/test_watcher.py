@@ -10,14 +10,16 @@ class Watcher(Kit):
         for f in ("STATE.md", "STATUS.md", "NOW.md", "WEEK0.md", "FINDINGS.md", "experiments.csv", "log.md", ".kref", ".lbnoise"):
             self.assertTrue((c / f).exists(), f)
         self.assertFalse((c / "watcher.sh").exists(), "the kit runs in place: no per-competition copy")
-        for key in ("ALERT [uncommitted] uncommitted: 1 files", "ALERT [csvbad-2] csvbad: experiments.csv line 2: parent is empty"):
+        for key in ("ALERT [uncommitted] uncommitted: 1 files", "ALERT [csvbad-2] csvbad: experiments.csv line 2: parent is empty",
+                    "] step-back overdue", "ALERT [noerr-e9-", "] noerr: rows e1 e2 e3 e4 e5 e6 e7 e8 e9 have oof_mean",
+                    "] ruler: CV vs public over 9 subs: slope -"):
             self.assertIn(key, ev, key)                                            # tier 1
-        for key in ("ruler: CV vs public over 9 subs: slope -", "[context] context: median main-session context today 200k"):
+        for key in ("[context] context: median main-session context today 200k",):
             self.assertIn(key, dg, key)                                            # tier 2
             self.assertNotIn(key, ev, key)
         st = (c / "STATUS.md").read_text()
         self.assertLessEqual(len(st.splitlines()), 20)
-        for key in ("NOW: day 0", "OPEN ALERTS: 2", "context p50 200k", "BEST: CV 0.89 (e9)", "nohup bash kit/watcher.sh w1"):
+        for key in ("NOW: day 0", "OPEN ALERTS: 5", "context p50 200k", "BEST: CV 0.89 (e9)", "nohup bash kit/watcher.sh w1"):
             self.assertIn(key, st, key)
 
     def test_watcher_reports_every_bad_csv_line(self):
@@ -35,24 +37,24 @@ class Watcher(Kit):
         import datetime as dt
         today = dt.date.today().isoformat()
         rows = [f"e{i},{today},c{i},lever,5,e1,m1,{.8 + .01 * i:.2f},0.7,{.4 + .005 * i:.3f},1,Y," for i in range(1, 10)]   # public = CV / 2
-        _, _, dg = self.watcher_pass(rows)
-        self.assertNotIn("ruler", dg)
+        _, ev, dg = self.watcher_pass(rows)
+        self.assertNotIn("ruler", ev + dg)
 
     def test_ruler_fires_when_public_lags_cv(self):            # RSNA-like: CV .80 -> .88, public .800 -> .805
         import datetime as dt
         today = dt.date.today().isoformat()
         rows = [f"e{i},{today},c{i},lever,5,e1,m1,{x},0.7,{y},1,Y," for i, (x, y) in
                 enumerate(zip((0.80, 0.82, 0.84, 0.86, 0.88), (0.800, 0.801, 0.802, 0.804, 0.805)), 1)]
-        _, _, dg = self.watcher_pass(rows)
-        self.assertIn("[ruler] ruler: CV vs public over 5 subs: slope 0.07 (public gains < half of CV gains)", dg)
+        _, ev, _ = self.watcher_pass(rows)
+        self.assertRegex(ev, r"ALERT \[ruler-[\d-]+\] ruler: CV vs public over 5 subs: slope 0.07 \(public gains < half of CV gains\)")
 
     def test_ruler_slope_unread_below_3x_lb_noise(self):     # CV range .005 = 2.5 x LB noise (.002): too narrow to read a slope
         import datetime as dt
         today = dt.date.today().isoformat()
         rows = [f"e{i},{today},c{i},lever,5,e1,m1,{x},0.7,{y},1,Y," for i, (x, y) in
                 enumerate(zip((0.800, 0.801, 0.802, 0.803, 0.804, 0.805), (0.800, 0.800, 0.801, 0.800, 0.801, 0.801)), 1)]
-        _, _, dg = self.watcher_pass(rows)
-        self.assertNotIn("ruler", dg)
+        _, ev, dg = self.watcher_pass(rows)
+        self.assertNotIn("ruler", ev + dg)
 
     def test_plateau(self):
         import datetime as dt
@@ -63,7 +65,7 @@ class Watcher(Kit):
         (self.comp / ".deadline").write_text(d(28) + "\n")
         rc, out = self.run_("bash", str(KIT / "watcher.sh"), "demo", "--once", CLAUDE_PROJECTS=str(self.root))
         self.assertEqual(rc, 0, out)
-        self.assertRegex((self.comp / "digest.md").read_text(), r"plateau: 14-d gain / 2 = 0.005 < 0.02\d*/week needed to reach CV 0.9 ")
+        self.assertRegex((self.comp / "events.log").read_text(), r"plateau: 14-d gain / 2 = 0.005 < 0.02\d*/week needed to reach CV 0.9 ")
 
     def test_plateau_and_keeper_agree_on_cut_in_cv(self):
         import datetime as dt
@@ -77,16 +79,66 @@ class Watcher(Kit):
         cuts = []
         for lbn in ("0.03\n", ""):                                # quiet ruler (CV range < 3 x LB noise) or fired (no LB noise): the same median offset
             (self.comp / ".lbnoise").write_text(lbn)
-            (self.comp / ".alerts" / "plateau").unlink(missing_ok=True)       # the plateau alert fires at most once per 3 h
+            for f in (self.comp / ".alerts").glob("plateau*"): f.unlink()    # the plateau alert fires once a week
             rc, out = self.run_("bash", str(KIT / "watcher.sh"), "demo", "--once", CLAUDE_PROJECTS=str(self.root))
             self.assertEqual(rc, 0, out)
             rc, cut = self.run_("python3", "-c", "import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); import keeper; "
                                 "print(keeper.cut_in_cv(Path(sys.argv[2]), 0.88))", str(KIT), str(self.comp))
             self.assertEqual(rc, 0, cut)
-            self.assertIn(f"to reach CV {float(cut):.4g} (.goldcut in CV units)", (self.comp / "digest.md").read_text())
+            self.assertIn(f"to reach CV {float(cut):.4g} (.goldcut in CV units)", (self.comp / "events.log").read_text())
             cuts.append(float(cut))
         self.assertEqual(cuts[0], cuts[1])
         self.assertAlmostEqual(cuts[0], 0.892, places=6)
+
+    def step_back_pass(self, tokens):
+        """FINDINGS.md last changed 4 h ago, `tokens` spent since, no kernel running; one watcher pass. Returns events.log."""
+        import datetime as dt, json, time
+        f = self.comp / "FINDINGS.md"
+        if not (self.root / "proj").exists():                       # first pass: the clock starts 4 h ago and stays put
+            f.write_text("| id | date | decision | number | example ids | verdict |\n|-|-|-|-|-|-|\n")
+            os.utime(f, (int(time.time()) - 4 * 3600,) * 2)
+            (self.root / "proj").mkdir()
+        (self.root / "proj" / f"s{tokens}.jsonl").write_text(json.dumps({"timestamp": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                                                               "message": {"id": f"m{tokens}", "usage": {"input_tokens": tokens}}}) + "\n")
+        rc, out = self.run_("bash", str(KIT / "watcher.sh"), "demo", "--once", CLAUDE_PROJECTS=str(self.root / "proj"))
+        self.assertEqual(rc, 0, out)
+        return (self.comp / "events.log").read_text()
+
+    def test_step_back_alerts_are_tier_1(self):
+        import datetime as dt
+        t = dt.date.today().isoformat()
+        with open(self.comp / "experiments.csv", "a") as fh:      # m1: the idea + 2 variants, each no better than its parent
+            fh.write(f"e1,{t},c1,floor,5,,m1,0.80,,,1,Y,\n" + "".join(f"e{i},{t},c{i},lever,5,e1,M1,0.7{i},,,1,N,\n" for i in (2, 3, 4)))
+            fh.write(f"e5,{t},knob,,5,e1,m2,0.79,,,1,N,\n")            # a knob row needs no error file
+        (self.comp / "eda").mkdir()
+        (self.comp / "eda" / "err-e3.md").write_text("e3 errors read\n")
+        ev = self.step_back_pass(6_000_000)
+        for key in ("] stuck: FINDINGS.md unchanged for 4 h while 6M tokens were spent, no kernel running; step back: run skill autopsy",
+                    "] stuck: 6M weighted tokens since FINDINGS.md last changed", "ALERT [loop-m1-e4] loop: mechanism m1 failed 3 times",
+                    "] noerr: rows e1 e2 e4 have oof_mean"):   # e1 kept, e2/e4 lever; e3 read; e5 a knob
+            self.assertIn(key, ev, key)
+        self.assertEqual(ev.count("ALERT [stuck-time-"), 1)
+        self.assertNotIn("step-back overdue", ev)                   # no .entry: the 72-h clock starts today
+        (self.comp / "STATE.md").write_text("# state\n")              # a live competition
+        _, err = self.hook("check_stop.py", {})
+        self.assertIn("step back: run skill autopsy", err)          # the agent sees the instruction, not a cut-off key
+        self.step_back_pass(6_000_000)
+        self.assertEqual((self.comp / "events.log").read_text().count(" ALERT "), ev.count(" ALERT "))   # same state: no re-fire
+        ev2 = self.step_back_pass(5_000_000)                        # 5M more tokens (11M), still no finding: stuck-tokens re-arms
+        self.assertEqual(ev2.count("ALERT [stuck-tokens-"), 2)
+
+    def test_idle_lead_is_not_stuck(self):
+        self.assertNotIn("stuck", self.step_back_pass(1000))       # 4 h without a finding, but no work either
+
+    def test_keeper_ignores_step_back_alerts(self):
+        import datetime as dt
+        now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        (self.comp / "STATE.md").write_text("# state\n")
+        (self.comp / ".tokens_today").write_text("1000000\n")
+        with open(self.comp / "events.log", "a") as fh:            # recent progress, one open step-back alert only
+            fh.write(f"{now} PUSH me/k1 v1\n{now} ALERT [stuck-time-1] stuck: FINDINGS.md unchanged for 3 h\n")
+        lines, _ = self.keeper(3)
+        self.assertFalse([l for l in lines if "restart-lead" in l], lines)
 
     def test_plateau_goldcut_without_public_uses_flat_rule(self):
         import datetime as dt
@@ -98,7 +150,7 @@ class Watcher(Kit):
         (self.comp / ".deadline").write_text(d(28) + "\n")
         rc, out = self.run_("bash", str(KIT / "watcher.sh"), "demo", "--once", CLAUDE_PROJECTS=str(self.root))
         self.assertEqual(rc, 0, out)
-        self.assertIn("plateau: best oof_mean not improved for 10 d", (self.comp / "digest.md").read_text())
+        self.assertIn("plateau: best oof_mean not improved for 10 d", (self.comp / "events.log").read_text())
 
     def test_plateau_flat_rule_before_any_row_is_14_days_old(self):
         import datetime as dt
@@ -109,7 +161,7 @@ class Watcher(Kit):
         (self.comp / ".deadline").write_text(d(28) + "\n")
         rc, out = self.run_("bash", str(KIT / "watcher.sh"), "demo", "--once", CLAUDE_PROJECTS=str(self.root))
         self.assertEqual(rc, 0, out)
-        self.assertIn("plateau: best oof_mean not improved for 10 d", (self.comp / "digest.md").read_text())
+        self.assertIn("plateau: best oof_mean not improved for 10 d", (self.comp / "events.log").read_text())
 
     def test_status_best_accepts_float_folds(self):
         with open(self.comp / "experiments.csv", "a") as fh:

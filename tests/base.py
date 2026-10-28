@@ -1,7 +1,9 @@
 """Shared fixture for the offline kit tests (stdlib + numpy): python3 -m unittest discover -s tests
 A fake `kaggle` (tests/bin/kaggle) stands in for the CLI; every test runs in a temp competition root."""
-import hashlib, os, subprocess, tempfile, unittest
+import hashlib, os, subprocess, tempfile, time, unittest
 from pathlib import Path
+
+os.environ["TZ"] = "UTC"; time.tzset()   # the kit's day is UTC: a local date.today() is a day off east of UTC in the morning
 
 KIT = Path(__file__).resolve().parent.parent / "kit"
 BIN = Path(__file__).resolve().parent / "bin"

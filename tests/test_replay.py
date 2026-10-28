@@ -35,6 +35,8 @@ class Replay(unittest.TestCase):
         d, msg, screens = days("rogii-wellbore")
         self.assertEqual((d["plateau"][0], d["plateau"][-1]), ("2026-07-31", "2026-08-03"))   # 7 d flat; pscont (08-04) clears it
         self.assertEqual(d["ruler"], ["2026-08-05"])        # LB noise first recorded 08-07: not measured during the competition
+        self.assertFalse([k for k in d if k.startswith("loop")])   # blend, ens-deploy, ens2: kept=N but each beat its parent's CV (superseded)
+        self.assertFalse({"noerr", "stepback"} & set(d))   # not in the records: left out
         self.assertIn("LB noise not measured", msg["ruler"])
         self.assertEqual(screens, [])
 

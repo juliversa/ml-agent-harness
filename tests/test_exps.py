@@ -24,6 +24,21 @@ class Exps(unittest.TestCase):
         noisy = [(x, x + e) for (x, _), e in zip(line, (.02, -.02, .02, -.02, .02))]
         self.assertIn("scatters", exps.ruler(noisy, 0.004))
 
+    def test_step_back_reads(self):
+        import tempfile, pathlib
+        row = lambda i, k, v, kept, parent="e0": {"id": i, "kind": k, "mechanism": "m1", "oof_mean": v, "kept": kept, "parent": parent}
+        base = [row("e0", "floor", ".80", "Y", "")]
+        worse = [row(f"e{i}", "lever", ".79", "N") for i in (1, 2, 3)]
+        self.assertEqual(exps.loops(base + worse, 1), ["m1@e3"])                 # the idea + 2 variants, none beat e0
+        self.assertEqual(exps.loops(base + worse[:2], 1), [])
+        self.assertEqual(exps.loops(base + worse, -1), [])                        # lower is better: each beat e0 (superseded)
+        self.assertEqual(exps.loops(base + worse[:2] + [row("k", "lever", ".81", "Y")] + worse[2:], 1), [])   # a kept=Y resets
+        rows = base + [row("e1", "lever", ".81", "N"), row("e2", "", ".82", "N"), row("e3", "lever", "nan", "N"), row("e4", "base", ".83", "N")]
+        with tempfile.TemporaryDirectory() as d:
+            (pathlib.Path(d) / "eda").mkdir()
+            (pathlib.Path(d) / "eda" / "err-e0.md").write_text("read\n")
+            self.assertEqual(exps.no_error_file(d, rows), ["e1"])   # e0 read; e2 a knob; e3 not scored; e4 neither kept nor lever
+
     def test_cut_in_cv_uses_median_offset(self):
         self.assertIsNone(exps.cut_in_cv(0.959, []))
         self.assertIsNone(exps.cut_in_cv(None, [(0.9, 0.95)]))

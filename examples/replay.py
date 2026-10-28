@@ -9,15 +9,19 @@ Point in time: experiments.csv holds each value as logged that day; <comp>/known
 what became known later (a rescored CV, the first gold cut, the first LB-noise measure), each only from its own date.
 A dotfile named in known.csv (.goldcut, .lbnoise) is absent before its first date; other dotfiles (.lower) are copied.
 A stub `kaggle` (no kernels listed, never called) and an empty transcript folder stand in for the live services;
-optional kit/extras add-ons are left out (the shipped checks only).
+optional kit/extras add-ons are left out (the shipped checks only). Left out too: noerr and stepback (no eda/ or intel/ files in the records,
+so they would fire every day) and stuck-time, stuck-tokens (no transcripts, so they cannot fire).
 Also lists kept=Y rows on fewer than 5 folds: law 4 (kit/compare.py) reads those as screens, never as kept."""
-import csv, datetime as dt, os, shutil, subprocess, sys, tempfile
+import csv, datetime as dt, os, re, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 KIT = Path(__file__).resolve().parent.parent / "kit"
 sys.path.insert(0, str(KIT))
 from exps import num  # noqa: E402  (the watcher's number parser)
-KEY = lambda a: a[1:a.index("]")]
+DAYKEY = re.compile(r"-\d{4}-(?:\d{2}-\d{2}|W\d{2})(?=\])")   # the watcher keys by today's day or week, not the replayed one
+KEY = lambda a: DAYKEY.sub("", a)[1:DAYKEY.sub("", a).index("]")]   # ruler-<day> -> ruler
+UNRECORDED = ("noerr", "stepback", "stuck-time", "stuck-tokens")
+UNRECORDED_KEY = lambda k: k.startswith(UNRECORDED)
 
 
 def known_by(known, d, day):
@@ -71,7 +75,7 @@ def replay(src):
             for f in ("events.log", "digest.md"):
                 p = c / f
                 for line in (p.read_text().splitlines() if p.exists() else []):
-                    if "[" in line: out.append((d.isoformat(), line[line.index("["):]))
+                    if "[" in line and not UNRECORDED_KEY(KEY(line[line.index("["):])): out.append((d.isoformat(), line[line.index("["):]))
             d += dt.timedelta(1)
     screens = [r["id"] for r in rows if (r.get("kept") or "").strip().lower() in ("y", "yes", "1", "true") and (num(r.get("folds")) or 5) < 5]
     return out, screens
@@ -82,5 +86,5 @@ if __name__ == "__main__":
     days = {}
     for d, a in alerts: days.setdefault(KEY(a), []).append((d, a))
     for k, v in days.items():       # first day each alert fired, its message then, and how many replayed days it was up
-        print(f"{v[0][0]}  {v[0][1]}  (up {len(v)} d, last {v[-1][0]})")
+        print(f"{v[0][0]}  {DAYKEY.sub('', v[0][1])}  (up {len(v)} d, last {v[-1][0]})")
     print(f"kept=Y on < 5 folds ({len(screens)}): {' '.join(screens) or '-'}; law 4 reads these as screens (kit/compare.py), not kept")

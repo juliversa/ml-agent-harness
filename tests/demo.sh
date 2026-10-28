@@ -34,12 +34,13 @@ echo 0.002 > "$C/.lbnoise"
 P=(0.95 0.94 0.96 0.93 0.94 0.92 0.93 0.91 0.92)   # public drifts down as CV climbs (noisy, not a perfect -1)
 for i in 1 2 3 4 5 6 7 8 9; do k=lever; p=e$((i-1)); [ $i = 1 ] && k=floor p=; echo "e$i,$(date -u +%F),change $i,$k,5,$p,m1,0.8$i,0.7,${P[i-1]},1,Y," >> "$C/experiments.csv"; done
 bash "$R/kit/watcher.sh" demo --once >/dev/null 2>&1
-grep -q '\[ruler\]' "$C/digest.md" || exit 1
+grep -q 'ALERT \[ruler-' "$C/events.log" || exit 1
 echo "tier 1 (events.log; the Stop hook sends the agent back to ack them):"
 grep ALERT "$C/events.log" | sed 's/^[^ ]* /  /'
-echo "tier 2 (digest.md):"
-sed 's/^[^ ]* /  /' "$C/digest.md"
+[ -s "$C/digest.md" ] && { echo "tier 2 (digest.md):"; sed 's/^[^ ]* /  /' "$C/digest.md"; }
 
 say "Act on the tier-1 alerts, then ack them (kit/ack.sh)"
 echo '{}' | python3 "$R/kit/hooks/check_stop.py" 2>&1 | head -3
-bash "$R/kit/ack.sh" 'k-*' "outputs read, logged as e9" && echo '{}' | python3 "$R/kit/hooks/check_stop.py" && echo "Stop hook: turn may end"
+mkdir -p "$C/eda"; for i in 1 2 3 4 5 6 7 8 9; do echo "e$i failing items: id, label, pred, path, cause" > "$C/eda/err-e$i.md"; done   # the lead reads the errors
+bash "$R/kit/ack.sh" 'k-*' "outputs read, logged as e9" && bash "$R/kit/ack.sh" 'noerr-*' "eda/err-e1..e9.md written" && bash "$R/kit/ack.sh" 'ruler-*' "read; next pick waits for a fresh LB-noise measure" \
+  && echo '{}' | python3 "$R/kit/hooks/check_stop.py" && echo "Stop hook: turn may end"

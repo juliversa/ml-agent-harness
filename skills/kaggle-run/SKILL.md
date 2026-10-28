@@ -35,7 +35,7 @@ Needs: `kit/harvest_check.sh`, `kit/harvest.sh`, `kit/preflight.py`, `kit/push_a
    ```sh
    timeout 12h grep -m1 ALERT <(tail -n0 -F <comp>/events.log)
    ```
-3. After the harvest: `bash kit/ack.sh 'k-<user>_<slug>-*' <experiments.csv id>` (RULES R30, the watcher's tier-1 alerts).
+3. After the harvest: if the row is kept or a lever and has a CV, read its failing items into `<comp>/eda/err-<id>.md` (skill `autopsy`; if it is missing, the watcher raises `noerr`); then `bash kit/ack.sh 'k-<user>_<slug>-*' <experiments.csv id>` (RULES R30, the watcher's tier-1 alerts).
 4. Every 5-fold run: save its OOF and test predictions as `<comp>/oof/<id>.npy` and `<comp>/test/<id>.npy` (RULES R3, from week 1; `kit/templates/train.py --from-oof`), so models' errors can be compared and blended late.
 5. To recover a kernel, `kaggle kernels pull <user>/<slug>/<N> -p dir` returns pushed version N byte-exact. Logs: T19.
 
