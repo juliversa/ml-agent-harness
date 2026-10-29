@@ -41,9 +41,7 @@ tier 1 (events.log; the Stop hook sends the agent back to ack them):
 |---|---|---|---|
 | ROGII (well-log alignment, 6,191) | silver, 125th | hard-well gate, −0.622 private (above) | Particle filter aligning gamma-ray logs; confidence gate that switches to the well's own log where it fits better; code: [kaggle_geosteer](https://github.com/juliversa/kaggle_geosteer) |
 | BioHub (3-D cell tracking, 4,020) | bronze, 355th | the only late change that gained on private | One ILP linker on a public 3-D U-Net detector, replay-validated on unseen embryos |
-| RSNA knee (MRI, 12 findings, 6,425) | bronze, private AUC .943 | public .892 → .909 like-for-like (5-fold e010 → e014); CV gain inflated by OOF-blended labels | ConvNeXt-T, per-finding attention; LLM report labels + image teacher; scanner-held-out folds |
-
-On RSNA, my single-recipe 5-fold model scored .951 on the public board, above the forked public notebook, a 5-stage ensemble run on its authors' weights (.943 public, row e000 of the replay), and the best public single models I saw (.949–.950); their private scores are not in my records. The final submissions used only models trained by the agent.
+| RSNA knee (MRI, 12 findings, 6,425) | bronze, private AUC .943 | CV ranked all 4 finals in private order; own models only | ConvNeXt-T, per-finding attention; LLM report labels + image teacher; scanner-held-out folds |
 
 Also: BirdCLEF+ (own HGNet SED model; Perch + ProtoSSM + SED ensemble) and an LLM maths-reasoning competition (gpt-oss-120b served with vLLM, tool-integrated reasoning, inverse-entropy voting), no medal.
 
@@ -69,21 +67,6 @@ Evidence for each row: `LESSONS.md`; rules: `RULES.md`; method: `PLAYBOOK.md`; t
 | On ROGII (lower is better), in the 11 days after v27 (07-24), other changes cut private error by 0.189 while the best public score moved 0.003 | progress is read on CV, never on the public board; the watcher's plateau alert flags a stall | method; code: `kit/watcher.sh` (alert) |
 | Ideas were closed on cheap tests that later proved to be the winners' biggest lever | an idea is closed only after its strongest version has run on all folds, never on a quick probe | written rule; code: `kit/push_and_watch.sh` (a lever run needs an elite-spec file naming that version) |
 | RSNA: a 58-exam expert set did not track the public board over 13 submissions (above) | CV is trusted to rank only while public scores keep tracking it on a rising line; the watcher flags a break | method; code: `kit/watcher.sh` (alert) |
-
-## A real experiment log (excerpt)
-Rows from RSNA knee's full `experiments.csv`, lightly redacted (`examples/rsna-knee/` ships a shortened subset), from before progress was read on 5-fold CV only (the log predates the final ConvNeXt-T backbone). `folds` 1 = one fold only (the free GPU quota could not pay for 5 folds per idea; today fewer folds need the owner's OK, budget mode, `PLAYBOOK.md`), so 1-fold and 5-fold scores are not comparable. `parent` comes from each row's note; e014's like-for-like 5-fold control is e010.
-
-| id | parent | change | folds | oof_mean | public | kept |
-|---|---|---|---|---|---|---|
-| e005 | | CoAtNet-1 224, site-grouped folds | 1 | 0.8482 | | yes |
-| e010 | e008 | same model, 5 site folds + SWA (5-fold control) | 5 | 0.8388 | 0.892 | yes |
-| e011 | e005 | same model trained on TPU | 1 | 0.8471 | | yes |
-| e012 | e011 | denser slice corpus (72 slots) | 1 | 0.8561 | | yes |
-| e013 | e005 | soft labels: report + OOF blend | 1 | 0.8821 | | yes |
-| e014 | e012 | combines e012 + e013 (5 folds: compare with e010, not the fold-0 rows) | 5 | 0.8726 | 0.909 | yes |
-| e020 | e014 | inference windows re-scored | 1 | 0.8912 | | no |
-| e025 | e014 | every-slice cache, backbone LR 1e-4 | 1 | 0.8919 | 0.920 | yes |
-| e027 | e025 | slot windows + knee orientation | 1 | 0.8912 | 0.914 | no |
 
 ## What the code does
 Each part, where it lives, and its honest limit.
