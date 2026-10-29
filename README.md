@@ -45,7 +45,7 @@ tier 1 (events.log; the Stop hook sends the agent back to ack them):
 
 On RSNA, my single-recipe 5-fold model scored .951 on the public board, above the forked public notebook, a 5-stage ensemble run on its authors' weights (.943 public, row e000 of the replay), and the best public single models I saw (.949–.950); their private scores are not in my records. The final submissions used only models trained by the agent.
 
-Also: BirdCLEF+ (own HGNet SED model; Perch + ProtoSSM + SED ensemble) and AIMO3 (gpt-oss-120b, tool-integrated reasoning, inverse-entropy voting), no medal.
+Also: BirdCLEF+ (own HGNet SED model; Perch + ProtoSSM + SED ensemble) and an LLM maths-reasoning competition (gpt-oss-120b served with vLLM, tool-integrated reasoning, inverse-entropy voting), no medal.
 
 ## Replay: what today's checks would have caught
 Two finished competitions' records, replayed day by day through today's watcher (`examples/replay.py`). Each day sees only what was on record that day: numbers learned later enter on their own date. It shows what would have been flagged, not what would have been won. Full table: `examples/README.md`.
@@ -150,7 +150,7 @@ Permissions and hooks are in `kit/settings.example.json`; `.claude/` (your `sett
 | `RULES.md` | the operating contract between owner and agent; rules cite the lesson behind them |
 | `PLAYBOOK.md` | the method: a weekly review loop, a week-by-week plan, 14 rules of thumb (laws), the records the watcher reads |
 | `GLOSSARY.md` | the terms used across the docs, in plain English |
-| `LESSONS.md` | five competitions compared with winners' or top-team write-ups (AIMO3: forum); 35 lessons (25 in the table + a 10-item checklist); priors by problem type |
+| `LESSONS.md` | five competitions compared with winners' or top-team write-ups (one from the forum); 35 lessons (25 in the table + a 10-item checklist); priors by problem type |
 | `TOOLING.md` | 27 Kaggle and compute traps, symptom → fix |
 | `skills/` | the agent's procedures: run, submit, `red-team-run` (signs the GO), `hostile-review`, autopsy, post-mortem, `explainer-video`, and others |
 | `kit/` | the code above: gates, watcher + `ack.sh`, hooks, `compare.py`, `exps.py`, `agentmeter.py`, `keeper.py`, `fanout.py`, `pick_items.py`, `sim_bar.py`; also harvest, linters, `graphs.py`, templates, the scaffold, the video engine |
