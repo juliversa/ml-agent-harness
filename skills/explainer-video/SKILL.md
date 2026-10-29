@@ -1,6 +1,6 @@
 ---
 name: explainer-video
-description: Make a short narrated explainer video (animated graphs and voice) about a competition, a result, a model or any idea. Use when asked for a video, an explainer, a visual summary, or /explainer-video.
+description: Make a short narrated explainer video (animated graphs and voice) about a competition, a result, a model or any idea. Use 24 h into every competition (WEEK0 item 16), when asked for a video, an explainer, a visual summary, or /explainer-video.
 ---
 # explainer-video
 Turn an idea into a 3–6 minute narrated video where every on-screen fact has a source.

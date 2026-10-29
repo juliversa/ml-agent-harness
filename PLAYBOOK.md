@@ -57,7 +57,7 @@ Solo by design; note the team-merge deadline in WEEK0.
 ## 4. Week by week
 | when | do | exit test |
 |---|---|---|
-| days 0–3 | §3; ~1 h on raw data before any helper page (R7); D2 research #1; folds fixed; hard-slice rule written; floor = best public notebook retrained by us | WEEK0 complete; `kind=floor` row scored |
+| days 0–3 | §3; ~1 h on raw data before any helper page (R7); D2 research #1; explainer video at 24 h (WEEK0 item 16); folds fixed; hard-slice rule written; floor = best public notebook retrained by us | WEEK0 complete; `kind=floor` row scored |
 | week 1 | strongest simple base trained by us (law 2); hard slice frozen; LB noise measured (Terms); save OOF + test preds for every 5-fold run | base has CV + `oof_hard` + public |
 | weeks 1–2 | elite version of the top lever on 50–100 items (D4); 2–3 families small, best to 5 folds | lever has a CV read |
 | day 14 | leaders' family trained by us on 5 folds | `kind=family5f` row |
@@ -71,7 +71,7 @@ Short window (≤ 3 weeks): public-recipe base trained by us by day 2 → elite 
 **Owner brief.** Weekly from day 7: run `python3 kit/graphs.py <comp>` (progress to the gold cut, experiment lineage,
 CV vs leaderboard) and write `<comp>/weekly/<date>.md`: ≤ 1 screen, per skill `lean-replies`, words as in
 `GLOSSARY.md`: where we are vs the gold cut, what shipped (number), what failed (number), next week's one bet, owner
-decisions by ID, the three pictures. The text is the record. Videos (skill `explainer-video`, 3–6 min): short explainer videos for a result or method,
+decisions by ID, the three pictures. The text is the record. Videos (skill `explainer-video`, 3–6 min): one competition explainer at 24 h (WEEK0 item 16), then short explainer videos for a result or method,
 when useful.
 
 ## 5. Laws
@@ -118,7 +118,7 @@ when useful.
    rules + owner, hedge if allowed; new data → re-score the base.
 13. **Finals = best CV + strongest least-correlated candidate.** Rule and predicted public written first; never two
    public-best of one family; both re-run from scratch and scored in the last 48 h; red-team the pair; the owner picks (L20, R19).
-14. **Submissions:** floor by day 2, then ≥ 1/day, ≤ 2/day, by CV only, CV + claim in the message (skill `kaggle-submit`).
+14. **Submissions:** floor by day 2, then ≥ 1/day, ≤ 5/day (Kaggle's cap; owner 10-29), by CV only, CV + claim in the message (skill `kaggle-submit`).
 
 ## 6. Priors
 On demand: `LESSONS.md` › Priors by problem type. Rows cite their evidence. Read the CV–LB gap and the D5 autopsy before picking a lever type.

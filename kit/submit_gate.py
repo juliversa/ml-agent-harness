@@ -131,8 +131,8 @@ def main():
     for r in today:
         if (r.get("description") or "").startswith(f"{a.desc.strip()} |"):
             die(f"DUPLICATE: already submitted today with this --desc:\n    {r}")
-    if len(today) >= 2:
-        die(f"{len(today)} submissions today (UTC) already: the cap is 2 per day (PLAYBOOK law 14).")
+    if len(today) >= 5:
+        die(f"{len(today)} submissions today (UTC) already: the cap is 5 per day (PLAYBOOK law 14).")
 
     what = f"file {a.file}" if a.file else f"{kernel} v{a.version}"
     print(f"=== submit gate: {what} — {a.desc} ===")

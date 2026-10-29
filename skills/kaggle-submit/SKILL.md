@@ -8,7 +8,7 @@ Submit only a candidate with a validation number, through `kit/submit_gate.py`, 
 Needs: `kit/submit_gate.py`, `<comp>/events.log`, `<comp>/log.md`.
 
 ## Steps
-1. Get the validation number AND its aggregation: the same predictions score differently pooled vs fold-averaged. The candidate is the lead's CV decision (PLAYBOOK law 4, one calibrated ruler); the gate does not choose. Cadence follows law 14 (floor by day 2, then 1–2 a day, by CV only).
+1. Get the validation number AND its aggregation: the same predictions score differently pooled vs fold-averaged. The candidate is the lead's CV decision (PLAYBOOK law 4, one calibrated ruler); the gate does not choose. Cadence follows law 14 (floor by day 2, then 1–5 a day, by CV only).
 2. Submitting without a CV is allowed only for a pure runtime fix or a change upstream of the cached harness; say which, and expect no delta. "Confident in the mechanism" is not a number.
 3. Find `--version`: vN of the last `PUSH <ref> vN` line in `events.log` (TOOLING T24, code-competition submit errors); none → abort.
 4. Run the gate (add `--dry-run` when unsure):
@@ -19,7 +19,7 @@ Needs: `kit/submit_gate.py`, `<comp>/events.log`, `<comp>/log.md`.
    ```
    - File-upload competitions: `--file <submission.csv>` instead of `--kernel/--version`.
    - No `--cv` is refused unless `--probe "<what the slot measures>"` or `--no-cv-reason "<why>"`. Empty kernel log → `--no-log-reason`.
-   - Checks 0–4 (one at a time, ≤ 2/day, CV, AST of `--source`, pushed version, log health) are in the `submit_gate.py` docstring.
+   - Checks 0–4 (one at a time, ≤ 5/day, CV, AST of `--source`, pushed version, log health) are in the `submit_gate.py` docstring.
 5. Write the score next to its prediction in `log.md` and in the `public` column of `experiments.csv` the turn it lands.
 
 ## Traps

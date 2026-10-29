@@ -611,12 +611,12 @@ class Gates(Kit):
     def test_daily_cap_and_duplicate(self):
         import datetime as dt
         d = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-        subs = f"ref,date,description\\n1,{d} 01:00:00,a | x\\n2,{d} 02:00:00,b | y"
+        subs = "ref,date,description" + "".join(f"\\n{i},{d} 0{i}:00:00,{c} | x" for i, c in enumerate("abcde", 1))
         f = self.root / "s.csv"; f.write_text("id,target\n1,0.5\n")
         rc, out = self.run_("python3", str(KIT / "submit_gate.py"), "--file", str(f), "--competition", "demo-ref", "--desc", "t",
                             "--probe", "test", "--dry-run", FAKE_SUBS=subs)
         self.assertNotEqual(rc, 0)
-        self.assertIn("cap is 2 per day", out)
+        self.assertIn("cap is 5 per day", out)
         rc, out = self.run_("python3", str(KIT / "submit_gate.py"), "--file", str(f), "--competition", "demo-ref", "--desc", "a",
                             "--probe", "test", "--dry-run", FAKE_SUBS=f"ref,date,description\\n1,{d} 01:00:00,a | x")
         self.assertIn("DUPLICATE", out)

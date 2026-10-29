@@ -18,3 +18,4 @@
 13. **Team-merge deadline** (solo by design, PLAYBOOK §2; from the competition's overview/rules page):
 14. **Depth loop D1–D7 written into STATE.md** (D6/D7 may read `none yet`; only `—` is hollow; PLAYBOOK §1) · first red-team before the first GPU run (skill `red-team-run`).
 15. **TTA and post-processing** (knobs; main effort stays on models): costed on the week-1 base's OOF (minutes, no GPU; PLAYBOOK Terms: knob) → gain of each; revisit in the last two weeks:
+16. **Explainer video at 24 h** (owner 2026-10-29; skill `explainer-video`, 3–6 min, kept private): the competition, why it is hard, the top public solutions, our solution so far, why we struggle, where gold is → `$DEST/video/<name>/`; mp4 sent to the owner:
