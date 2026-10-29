@@ -39,7 +39,7 @@ tier 1 (events.log; the Stop hook sends the agent back to ack them):
 ## Competitions behind it
 | competition (task, teams) | result | key number | what I built |
 |---|---|---|---|
-| ROGII (well-log alignment, 6,191) | silver, 125th | hard-well gate, −0.622 private (above) | Particle filter aligning gamma-ray logs; confidence gate routing hard wells to a fallback; code: [kaggle_geosteer](https://github.com/juliversa/kaggle_geosteer) |
+| ROGII (well-log alignment, 6,191) | silver, 125th | hard-well gate, −0.622 private (above) | Particle filter aligning gamma-ray logs; confidence gate that switches to the well's own log where it fits better; code: [kaggle_geosteer](https://github.com/juliversa/kaggle_geosteer) |
 | BioHub (3-D cell tracking, 4,020) | bronze, 355th | the only late change that gained on private | One ILP linker on a public 3-D U-Net detector, replay-validated on unseen embryos |
 | RSNA knee (MRI, 12 findings, 6,425) | bronze, private AUC .943 | public .892 → .909 like-for-like (5-fold e010 → e014); CV gain inflated by OOF-blended labels | ConvNeXt-T, per-finding attention; LLM report labels + image teacher; scanner-held-out folds |
 
