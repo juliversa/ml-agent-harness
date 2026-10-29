@@ -303,7 +303,14 @@ def main():
     elif cmd == 'check':
         bad = [f"{sc['name']}_{j}" for sc in SC for j in range(len(sc['caps'])) if not audio_ok(sc, j)]
         print('audio OK for all captions' if not bad else f'missing or stale audio (re-run tts): {bad}')
-        sys.exit(1 if bad else 0)
+        caps = {f"{sc['name']}_{j}": cap_text(c) for sc in SC for j, c in enumerate(sc['caps'])}
+        orphan = [k for k in SPOKEN if k not in caps]
+        for k in SPOKEN:            # keys are positional: after a caption split, check each still matches its caption
+            if k in caps:
+                print(f'SPOKEN {k}\n  shows: {caps[k]}\n  says:  {SPOKEN[k]}')
+        if orphan:
+            print(f'SPOKEN keys with no caption (re-key them): {orphan}')
+        sys.exit(1 if bad or orphan else 0)
     elif cmd == 'render':
         import multiprocessing as mp
         nw = int(sys.argv[3]) if len(sys.argv) > 3 else 4
