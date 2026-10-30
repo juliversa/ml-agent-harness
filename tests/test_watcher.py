@@ -22,9 +22,21 @@ class Watcher(Kit):
         for key in ("NOW: day 0", "OPEN ALERTS: 5", "context p50 200k", "BEST: CV 0.89 (e9)", "nohup bash kit/watcher.sh w1"):
             self.assertIn(key, st, key)
 
-    def test_step_back_waits_for_a_stall(self):
-        _, ev, _ = self.watcher_pass()                                             # a finding today: progress, no step-back
-        self.assertNotIn("step-back overdue", ev)
+    def test_step_back_every_72h_sooner_when_stalled(self):
+        import time
+        c, ev, _ = self.watcher_pass()                                             # entry 8 d ago, no step-back yet: due despite a finding today
+        self.assertIn("step-back overdue", ev)
+        (c / "intel").mkdir(exist_ok=True)
+        note = c / "intel" / "stepback-x.md"
+        for note_h, findings_h, due in ((30, 0, False), (30, 30, True)):           # 30 h after a step-back: due only without progress
+            (c / ".alerts").exists() and [p.unlink() for p in (c / ".alerts").glob("stepback-*")]
+            (c / "events.log").write_text("")
+            note.write_text("LEVER: x\nEDGE: y\n")
+            os.utime(note, (time.time() - 3600 * note_h,) * 2)
+            os.utime(c / "FINDINGS.md", (time.time() - 3600 * findings_h,) * 2)
+            rc, out = self.run_("bash", str(KIT / "watcher.sh"), "w1", "--once", CLAUDE_PROJECTS=str(self.root / "proj"))
+            self.assertEqual(rc, 0, out)
+            self.assertEqual("step-back overdue" in (c / "events.log").read_text(), due, (note_h, findings_h))
 
     def test_watcher_reports_every_bad_csv_line(self):
         import datetime as dt
@@ -122,7 +134,7 @@ class Watcher(Kit):
                     "] noerr: rows e1 e2 e4 have oof_mean"):   # e1 kept, e2/e4 lever; e3 read; e5 a knob
             self.assertIn(key, ev, key)
         self.assertEqual(ev.count("ALERT [stuck-time-"), 1)
-        self.assertNotIn("step-back overdue", ev)                   # no .entry: the 72-h clock starts today
+        self.assertNotIn("step-back overdue", ev)                   # no .entry: the clocks start today
         (self.comp / "STATE.md").write_text("# state\n")              # a live competition
         _, err = self.hook("check_stop.py", {})
         self.assertIn("step back: run skill autopsy", err)          # the agent sees the instruction, not a cut-off key

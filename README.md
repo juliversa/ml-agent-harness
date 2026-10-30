@@ -84,7 +84,7 @@ Each part, where it lives, and its honest limit.
   | `stuck-tokens` | every 5M tokens since `FINDINGS.md` last changed | the same |
   | `loop` | one mechanism failed 3 times since its last kept change (each no better than its parent's CV) | next run is a new angle at a lower level: data, labels, metric, loss |
   | `noerr` | a kept or lever row has a CV but no `eda/err-<id>.md` (daily until it exists) | read that run's failing items (skill `autopsy`) |
-  | `stepback` | 72 h with no new finding and no `intel/stepback-<date>.md` | write one: the biggest untried lever and one thing no top-10 team uses |
+  | `stepback` | no `intel/stepback-<date>.md` in 72 h, or in 24 h with no new finding | write one: the biggest untried lever and one thing no top-10 team uses |
 
   The keeper does not restart an idle lead for `stuck-*`; they are about a lead that is working. Limits: tokens are price-weighted and counted over all Claude projects on the account (the usage limit is account-wide), so run one lead per account; `noerr` checks that the file exists, not that it was read; an ack takes any reason.
 - **Depth loop** (`PLAYBOOK.md` §1; day 0, then whenever progress stalls). The lead steps back and re-asks where to focus: the gap to gold and the rate needed per week, what top teams did that we are not doing, the real bottleneck (labels, data, shift, metric, model or compute) and what a winner would build for the top lever. Then the autopsy: a script picks the 20 worst-predicted items plus 10 clean and 10 random controls, one helper sorts them into error patterns, and the lead reads about 15 by hand (at least 3 random) and names the main error mechanism before the next idea. Day 0 starts with about an hour on the raw data before any summary.
