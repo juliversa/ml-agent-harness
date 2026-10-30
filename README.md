@@ -3,7 +3,7 @@
 
 I built this harness to run Claude Code as a solo Kaggle competitor. Its core idea: when a written rule failed to stop a mistake and a check was possible, I turned the rule into code. Scripts refuse GPU pushes and submissions until their checks pass, hooks block the direct CLI calls, and a watcher with no LLM raises alerts the agent must acknowledge.
 
-Kaggle, with earlier versions of this agent and my steering: silver (125th of 6,191) and two bronzes across five competitions of about 3,500–6,299 teams. This version is built from their failures and has not yet run a full competition; `examples/` replays two of them through it.
+Kaggle, with earlier versions of this agent and my steering: silver (125th of 6,191) and two bronzes across five competitions of about 3,500–6,299 teams. This open version is rebuilt from their failures, and `examples/` replays two of them through it.
 
 - **How you use it:** join a competition on kaggle.com, run `claude` in this repo and type `Join <slug>, deadline YYYY-MM-DD`. The agent scaffolds `competitions/<slug>/`, trains, and can push or submit only through the `kit/` scripts; you answer only a short list of owner decisions ([Quickstart](#quickstart)).
 - 128 offline tests run in CI; `bash tests/demo.sh` shows the gates refusing in seconds, with no Kaggle login.
