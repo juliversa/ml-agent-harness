@@ -87,6 +87,7 @@ Each part, where it lives, and its honest limit.
   | `stepback` | no `intel/stepback-<date>.md` in 72 h | write one: the biggest untried lever and one thing no top-10 team uses |
 
   The keeper does not restart an idle lead for `stuck-*`; they are about a lead that is working. Limits: tokens are price-weighted and counted over all Claude projects on the account (the usage limit is account-wide), so run one lead per account; `noerr` checks that the file exists, not that it was read; an ack takes any reason.
+- **Depth loop** (`PLAYBOOK.md` §1; day 0, then every Monday). The lead steps back and re-asks where to focus: the gap to gold and the rate needed per week, what top teams did that we are not doing, the real bottleneck (labels, data, shift, metric, model or compute) and what a winner would build for the top lever. Then the autopsy: a script picks the 20 worst-predicted items plus 10 clean and 10 random controls, one helper sorts them into error patterns, and the lead reads about 15 by hand (at least 3 random) and names the main error mechanism before the next idea. Day 0 starts with about an hour on the raw data before any summary.
 - **Tests** (`tests/`). Offline against a fake Kaggle CLI (`tests/bin/`): gate refusals, hook blocks, watcher alerts, the statistics, the replays, and the docs' own IDs and counts.
 
 ## How it works
