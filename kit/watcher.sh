@@ -23,7 +23,7 @@ HARNESS_ROOT="${HARNESS_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 # Step-back (once per state, day or amount, so a long stall is a few acks, not one every 3 h; stepback and loop, which ask for a new angle, stop at the day -10 freeze):
 #  *stuck-time-<t>-<n>    FINDINGS.md unchanged 3 h (then every 12 h), > 1M tokens spent since, no kernel running (t = its mtime)
 #  *stuck-tokens-<t>-<n>  every 5M tokens since FINDINGS.md last changed (tokens: price-weighted, all projects, kit/agentmeter.py)
-#  *stepback-<day>        no intel/stepback-* written in 72 h (PLAYBOOK law 6)
+#  *stepback-<day>        no intel/stepback-* in 72 h, or in 24 h while FINDINGS.md is unchanged (PLAYBOOK law 6)
 #  *loop-<mech>-<id>      3 kept=N rows on one mechanism since its last kept=Y, none beating its parent's CV (R9: the idea + 2 variants)
 #  *noerr-<id>-<day>      a scored kept or lever row has no eda/err-<id>.md (PLAYBOOK §7, D5); <id> = the newest such row
 # Optional add-on checks: every kit/extras/*.sh is sourced once per pass after these (none ship with the repo).
@@ -127,7 +127,8 @@ while :; do
   [ "$since" -gt 5000000 ] && once "stuck-tokens-$fm-$((since / 5000000))" "stuck: $((since / 1000000))M weighted tokens since FINDINGS.md last changed; $back"
   sb=$(ls -t "$C"/intel/stepback-* 2>/dev/null | head -1)
   sb_t=$( [ -n "$sb" ] && stat -c %Y "$sb" || date -u -d "$(cat "$C/.entry" 2>/dev/null || date -u +%F)" +%s )
-  [ $(( now - sb_t )) -gt 259200 ] && [ "$dd" -gt 10 ] && once "stepback-$(date -u +%F)" "step-back overdue: last $(( (now - sb_t) / 3600 )) h ago; write intel/stepback-<date>.md with LEVER: and EDGE: (PLAYBOOK law 6)"
+  last=$(( sb_t > fm ? sb_t : fm ))   # step-back every 72 h; sooner (24 h) when FINDINGS.md is unchanged since the last one
+  { [ $(( now - sb_t )) -gt 259200 ] || [ $(( now - last )) -gt 86400 ]; } && [ "$dd" -gt 10 ] && once "stepback-$(date -u +%F)" "step-back overdue: last step-back $(( (now - sb_t) / 3600 )) h ago, FINDINGS.md unchanged for $(( (now - fm) / 3600 )) h (every 72 h; after 24 h without progress); write intel/stepback-<date>.md with LEVER: and EDGE: (PLAYBOOK law 6)"
   for x in ${loops//,/ }; do [ "$x" = - ] || [ "$dd" -le 10 ] || once "loop-${x%@*}-${x#*@}" "loop: mechanism ${x%@*} failed 3 times since its last kept=Y (the idea + 2 variants, R9; latest ${x#*@}): next run is a new angle at a lower level (data, labels, metric, loss)"; done
   [ "${noerr:--}" != - ] && once "noerr-${noerr##*,}-$(date -u +%F)" "noerr: rows ${noerr//,/ } have oof_mean but no eda/err-<id>.md: run skill autopsy on each (D5 samples: id, label, pred, path, cause)"
 

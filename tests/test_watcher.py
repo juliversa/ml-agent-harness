@@ -6,11 +6,11 @@ from base import KIT, Kit
 
 class Watcher(Kit):
     def test_watcher_alerts(self):
-        c, ev, dg = self.watcher_pass()
+        c, ev, dg = self.watcher_pass(findings_age_h=80)                          # 80 h without a new finding
         for f in ("STATE.md", "STATUS.md", "NOW.md", "WEEK0.md", "FINDINGS.md", "experiments.csv", "log.md", ".kref", ".lbnoise"):
             self.assertTrue((c / f).exists(), f)
         self.assertFalse((c / "watcher.sh").exists(), "the kit runs in place: no per-competition copy")
-        for key in ("ALERT [uncommitted] uncommitted: 1 files", "ALERT [csvbad-2] csvbad: experiments.csv line 2: parent is empty",
+        for key in ("ALERT [uncommitted] uncommitted: 2 files", "ALERT [csvbad-2] csvbad: experiments.csv line 2: parent is empty",
                     "] step-back overdue", "ALERT [noerr-e9-", "] noerr: rows e1 e2 e3 e4 e5 e6 e7 e8 e9 have oof_mean",
                     "] ruler: CV vs public over 9 subs: slope -"):
             self.assertIn(key, ev, key)                                            # tier 1
@@ -21,6 +21,22 @@ class Watcher(Kit):
         self.assertLessEqual(len(st.splitlines()), 20)
         for key in ("NOW: day 0", "OPEN ALERTS: 5", "context p50 200k", "BEST: CV 0.89 (e9)", "nohup bash kit/watcher.sh w1"):
             self.assertIn(key, st, key)
+
+    def test_step_back_every_72h_sooner_when_stalled(self):
+        import time
+        c, ev, _ = self.watcher_pass()                                             # entry 8 d ago, no step-back yet: due despite a finding today
+        self.assertIn("step-back overdue", ev)
+        (c / "intel").mkdir(exist_ok=True)
+        note = c / "intel" / "stepback-x.md"
+        for note_h, findings_h, due in ((30, 0, False), (30, 30, True)):           # 30 h after a step-back: due only without progress
+            (c / ".alerts").exists() and [p.unlink() for p in (c / ".alerts").glob("stepback-*")]
+            (c / "events.log").write_text("")
+            note.write_text("LEVER: x\nEDGE: y\n")
+            os.utime(note, (time.time() - 3600 * note_h,) * 2)
+            os.utime(c / "FINDINGS.md", (time.time() - 3600 * findings_h,) * 2)
+            rc, out = self.run_("bash", str(KIT / "watcher.sh"), "w1", "--once", CLAUDE_PROJECTS=str(self.root / "proj"))
+            self.assertEqual(rc, 0, out)
+            self.assertEqual("step-back overdue" in (c / "events.log").read_text(), due, (note_h, findings_h))
 
     def test_watcher_reports_every_bad_csv_line(self):
         import datetime as dt
@@ -118,7 +134,7 @@ class Watcher(Kit):
                     "] noerr: rows e1 e2 e4 have oof_mean"):   # e1 kept, e2/e4 lever; e3 read; e5 a knob
             self.assertIn(key, ev, key)
         self.assertEqual(ev.count("ALERT [stuck-time-"), 1)
-        self.assertNotIn("step-back overdue", ev)                   # no .entry: the 72-h clock starts today
+        self.assertNotIn("step-back overdue", ev)                   # no .entry: the clocks start today
         (self.comp / "STATE.md").write_text("# state\n")              # a live competition
         _, err = self.hook("check_stop.py", {})
         self.assertIn("step back: run skill autopsy", err)          # the agent sees the instruction, not a cut-off key
