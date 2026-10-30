@@ -55,7 +55,7 @@ class Kit(unittest.TestCase):
         with open(plan, "a") as fh:
             fh.write(f"Verdict: GO sha256={h}\n")
 
-    def watcher_pass(self, rows=None):
+    def watcher_pass(self, rows=None, findings_age_h=0):
         """Scaffold w1, make it day 8 with nine 5-fold subs (or `rows`), run one watcher pass from kit/. Returns (comp dir, events.log, digest.md)."""
         import datetime as dt, json, re
         rc, out = self.run_("bash", str(KIT / "setup-competition.sh"), "w1", "W One", "2099-01-01", "w1-ref")
@@ -71,6 +71,8 @@ class Kit(unittest.TestCase):
         (c / ".lbnoise").write_text("0.002\n")
         (c / "experiments.csv").write_text((c / "experiments.csv").read_text() + "\n".join(rows) + "\n")
         (c / "FINDINGS.md").write_text((c / "FINDINGS.md").read_text() + f"| f1 | {today} | close m9 | .80 | | closed |\n")
+        if findings_age_h:                                                         # no new finding for that long
+            os.utime(c / "FINDINGS.md", (os.path.getmtime(c / "FINDINGS.md") - 3600 * findings_age_h,) * 2)
         (self.root / "proj").mkdir()
         now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")       # the lead ran at 200k context all day
         (self.root / "proj" / "s.jsonl").write_text("".join(json.dumps({"timestamp": now, "message": {

@@ -29,9 +29,9 @@ Terms (plain English: `GLOSSARY.md`):
 - **tie-block** = many teams on one score (forked notebooks).
 - **commit day** = the day finals are queued, with one retry.
 
-## 1. Depth loop (day 0, then every Monday; `STATE.md` D-lines, date on `depth-check:`)
+## 1. Depth loop (day 0, then whenever progress stalls: a `plateau`, `stuck-*`, `loop` or `stepback` alert; `STATE.md` D-lines, date on `depth-check:`)
 - [ ] **D1 Gap:** board-adjusted gold cut − our CV, weeks left, required rate per week (law 9). Empty board → prior: the
-      gold-vs-best-public-notebook gap of the 2–3 nearest past comps, tagged `prior`; replace it by day 7 and every Monday.
+      gold-vs-best-public-notebook gap of the 2–3 nearest past comps, tagged `prior`; replace it by day 7 and at each Depth loop.
 - [ ] **D2 What wins:** write-ups of the 2–3 nearest past comps + forum, top-10 posts, top notebooks → `intel/writeups.md`
       (URLs, verbatim quotes, by day 2) → 2–3 candidate levers with IDs, each sized against D1. No write-ups → papers on the
       nearest problem and past comps with the same metric or data type, tagged `[analog]`. Read top-10 hints literally.
@@ -62,7 +62,7 @@ Solo by design; note the team-merge deadline in WEEK0.
 | weeks 1–2 | elite version of the top lever on 50–100 items (D4); 2–3 families small, best to 5 folds | lever has a CV read |
 | day 14 | leaders' family trained by us on 5 folds | `kind=family5f` row |
 | day 21 | scale read, pseudo-label read (or reason), ≥ 2 mechanisms at 5 folds | rows have CV |
-| week 2 … −10 | weekly depth loop; D2 research #2 at ~30 % and #3 at ~50 % of the timeline; ≥ 1 real change a week (law 5); step-back every 72 h (law 6) | D6 each week |
+| week 2 … −10 | Depth loop whenever progress stalls; D2 research #2 at ~30 % and #3 at ~50 % of the timeline; ≥ 1 real change a week (law 5); step-back after 72 h without a new finding (law 6) | D6 each week |
 | day −10 … −5 | freeze; best single model maxed: 5 folds + seeds + all-data | incumbent fixed |
 | day −5 … 0 | full-data retrains; blend (built from day −14, per R3), strong decorrelated members only (non-negative weights fit nested out-of-fold; report the nested CV), valid file at t+0, commit day | finals (law 13) |
 
@@ -100,7 +100,7 @@ when useful.
 5. **From week 2, ≥ 1 real change a week**, aimed at an error mechanism named before the run, ≥ 2 SE, no fold
    negative, in a scored sub. Knob tuning (thresholds, weights, TTA; on CV, law 14) waits for the last 10 days, ≤ 10 % of time (L3, L4, L27); CV-read knobs that are
    part of the training recipe (LR, epochs, augmentation) are allowed when they pass law 4. TTA and post-processing are costed on OOF in week 1 (Terms: knob).
-6. **Keep reading.** Daily 10 min of new posts/notebooks → FINDINGS rows. Every 72 h a fresh step-back writes
+6. **Keep reading.** Daily 10 min of new posts/notebooks → FINDINGS rows. After 72 h without a new finding, a fresh step-back writes
    `intel/stepback-<date>.md` with `LEVER:` (biggest untried) and `EDGE:` (one thing no top-10 uses); run both within
    48 h. Check the base does not already do an imported trick's job (L29).
 7. **Own a copy of what moved the top**: leaders' type, 5 folds, by day 14. Label/data-bound → ≥ 50 % effort on training
@@ -132,7 +132,7 @@ On demand: `LESSONS.md` › Priors by problem type. Rows cite their evidence. Re
 - `kernels.txt`; `.entry .deadline .kref .lower .goldcut`; `.lbnoise` (the LB noise).
 - Step-back (tier 1): `eda/err-<id>.md` per scored kept or lever row (D5 samples: id, label, pred, path, cause; alert `noerr`); 3 `kept=N` rows on one
   mechanism since its last kept=Y, none beating its parent's CV → a new angle at a lower level (alert `loop`); `FINDINGS.md` changed within 3 h of
-  work (> 1M tokens, no kernel running) and within 5M tokens (alerts `stuck-time`, `stuck-tokens`); `intel/stepback-<date>.md` every 72 h (law 6, alert `stepback`).
+  work (> 1M tokens, no kernel running) and within 5M tokens (alerts `stuck-time`, `stuck-tokens`); `intel/stepback-<date>.md` after 72 h with no new finding (law 6, alert `stepback`).
   `mechanism` is a short fixed tag per idea (the loop check groups by it). Stepback and loop stop at the day −10 freeze.
 - `plans/<kernel slug>.md` for GPU/TPU pushes: `kind: <kind>`; `kind: lever` also `lever: <D2 id>` + `elite-spec: plans/elite-<id>.md`
   (file exists); last Verdict line `Verdict: GO sha256=<plan hash>` written by the reviewer (else `push_and_watch.sh` exit 6).
@@ -141,5 +141,5 @@ On demand: `LESSONS.md` › Priors by problem type. Rows cite their evidence. Re
 - `kind=floor` row and `intel/writeups.md` (≥ 3 URLs) by day 2; `eda/look-d0.md` + `eda/look-d0-*` by day 3.
 - `FINDINGS.md` `| id | date | decision | number (folds, SD) | example ids | verdict |` (example ids never empty; a closed/dead
   verdict names its `kind=lever` id, law 8).
-- `STATE.md` D-lines `- D<n> <name>: <value>`: never `—`; D1 has a number, D3 `mechanism:`, D5 `ids:`; depth-check ≤ 8 d old;
+- `STATE.md` D-lines `- D<n> <name>: <value>`: never `—`; D1 has a number, D3 `mechanism:`, D5 `ids:`; depth-check not older than the last stall alert;
   the D3 mechanism gets ≥ 50 % of 7-day `gpu_h`. One screen, overwritten in place. `log.md` append-only (submissions).

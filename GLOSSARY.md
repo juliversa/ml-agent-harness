@@ -18,7 +18,7 @@ One line each: what it is, and why it matters. Docs and reports use these words 
 - **Pseudo-labels**: the model's own confident predictions on unlabelled data, used as extra training labels.
 - **Blend / ensemble**: an average of several models. It helps only when the models make different mistakes.
 - **Red-team**: a fresh reviewer that tries to find what is wrong with a plan before GPU time is spent.
-- **Depth loop (D1–D7)**: the weekly checklist: name the bottleneck, read real errors, build the elite version, measure.
+- **Depth loop (D1–D7)**: the step-back checklist (day 0, then whenever progress stalls): name the bottleneck, read real errors, build the elite version, measure.
 - **Context**: everything the agent holds in mind at once. Too much makes it slow, costly and forgetful.
 - **wM**: weighted million tokens, the token cost measure (input + 1.25 × cache write + 0.1 × cache read + 5 × output).
 - **Law**: one of the 14 rules of thumb in PLAYBOOK §5, cited as "law N".

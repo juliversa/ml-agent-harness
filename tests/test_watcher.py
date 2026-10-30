@@ -6,11 +6,11 @@ from base import KIT, Kit
 
 class Watcher(Kit):
     def test_watcher_alerts(self):
-        c, ev, dg = self.watcher_pass()
+        c, ev, dg = self.watcher_pass(findings_age_h=80)                          # 80 h without a new finding
         for f in ("STATE.md", "STATUS.md", "NOW.md", "WEEK0.md", "FINDINGS.md", "experiments.csv", "log.md", ".kref", ".lbnoise"):
             self.assertTrue((c / f).exists(), f)
         self.assertFalse((c / "watcher.sh").exists(), "the kit runs in place: no per-competition copy")
-        for key in ("ALERT [uncommitted] uncommitted: 1 files", "ALERT [csvbad-2] csvbad: experiments.csv line 2: parent is empty",
+        for key in ("ALERT [uncommitted] uncommitted: 2 files", "ALERT [csvbad-2] csvbad: experiments.csv line 2: parent is empty",
                     "] step-back overdue", "ALERT [noerr-e9-", "] noerr: rows e1 e2 e3 e4 e5 e6 e7 e8 e9 have oof_mean",
                     "] ruler: CV vs public over 9 subs: slope -"):
             self.assertIn(key, ev, key)                                            # tier 1
@@ -21,6 +21,10 @@ class Watcher(Kit):
         self.assertLessEqual(len(st.splitlines()), 20)
         for key in ("NOW: day 0", "OPEN ALERTS: 5", "context p50 200k", "BEST: CV 0.89 (e9)", "nohup bash kit/watcher.sh w1"):
             self.assertIn(key, st, key)
+
+    def test_step_back_waits_for_a_stall(self):
+        _, ev, _ = self.watcher_pass()                                             # a finding today: progress, no step-back
+        self.assertNotIn("step-back overdue", ev)
 
     def test_watcher_reports_every_bad_csv_line(self):
         import datetime as dt

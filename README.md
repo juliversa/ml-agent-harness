@@ -6,7 +6,7 @@ I built this harness to run Claude Code as a solo Kaggle competitor. Its core id
 Kaggle, with earlier versions of this agent and my steering: silver (125th of 6,191) and two bronzes across five competitions of about 3,500–6,299 teams. This version is built from their failures and has not yet run a full competition; `examples/` replays two of them through it.
 
 - **How you use it:** join a competition on kaggle.com, run `claude` in this repo and type `Join <slug>, deadline YYYY-MM-DD`. The agent scaffolds `competitions/<slug>/`, trains, and can push or submit only through the `kit/` scripts; you answer only a short list of owner decisions ([Quickstart](#quickstart)).
-- 127 offline tests run in CI; `bash tests/demo.sh` shows the gates refusing in seconds, with no Kaggle login.
+- 128 offline tests run in CI; `bash tests/demo.sh` shows the gates refusing in seconds, with no Kaggle login.
 - Guard rails, not a sandbox: run the agent in a container or VM (this one ran in Docker).
 - Numbers that are not in `examples/` come from my private competition records.
 
@@ -84,17 +84,17 @@ Each part, where it lives, and its honest limit.
   | `stuck-tokens` | every 5M tokens since `FINDINGS.md` last changed | the same |
   | `loop` | one mechanism failed 3 times since its last kept change (each no better than its parent's CV) | next run is a new angle at a lower level: data, labels, metric, loss |
   | `noerr` | a kept or lever row has a CV but no `eda/err-<id>.md` (daily until it exists) | read that run's failing items (skill `autopsy`) |
-  | `stepback` | no `intel/stepback-<date>.md` in 72 h | write one: the biggest untried lever and one thing no top-10 team uses |
+  | `stepback` | 72 h with no new finding and no `intel/stepback-<date>.md` | write one: the biggest untried lever and one thing no top-10 team uses |
 
   The keeper does not restart an idle lead for `stuck-*`; they are about a lead that is working. Limits: tokens are price-weighted and counted over all Claude projects on the account (the usage limit is account-wide), so run one lead per account; `noerr` checks that the file exists, not that it was read; an ack takes any reason.
-- **Depth loop** (`PLAYBOOK.md` §1; day 0, then every Monday). The lead steps back and re-asks where to focus: the gap to gold and the rate needed per week, what top teams did that we are not doing, the real bottleneck (labels, data, shift, metric, model or compute) and what a winner would build for the top lever. Then the autopsy: a script picks the 20 worst-predicted items plus 10 clean and 10 random controls, one helper sorts them into error patterns, and the lead reads about 15 by hand (at least 3 random) and names the main error mechanism before the next idea. Day 0 starts with about an hour on the raw data before any summary.
+- **Depth loop** (`PLAYBOOK.md` §1; day 0, then whenever progress stalls). The lead steps back and re-asks where to focus: the gap to gold and the rate needed per week, what top teams did that we are not doing, the real bottleneck (labels, data, shift, metric, model or compute) and what a winner would build for the top lever. Then the autopsy: a script picks the 20 worst-predicted items plus 10 clean and 10 random controls, one helper sorts them into error patterns, and the lead reads about 15 by hand (at least 3 random) and names the main error mechanism before the next idea. Day 0 starts with about an hour on the raw data before any summary.
 - **Tests** (`tests/`). Offline against a fake Kaggle CLI (`tests/bin/`): gate refusals, hook blocks, watcher alerts, the statistics, the replays, and the docs' own IDs and counts.
 
 ## How it works
 ```mermaid
 flowchart LR
   N[You name a competition] --> S[kaggle-new-competition<br/>scaffold, WEEK0, watcher]
-  S --> D["Weekly review<br/>biggest gap, next experiment"]
+  S --> D["Step-back review when progress stalls<br/>biggest gap, next experiment"]
   D --> P[run plan + fresh reviewer<br/>signs a GO bound to the plan hash]
   P --> K[push_and_watch.sh<br/>lint, gate, push]
   K --> W[watcher.sh<br/>ALERT lines, digest,<br/>STATUS.md, agentmeter]
@@ -132,7 +132,7 @@ Permissions and hooks are in `kit/settings.example.json`; `.claude/` (your `sett
 |---|---|
 | `CLAUDE.md` | the agent's boot order |
 | `RULES.md` | the operating contract between owner and agent; rules cite the lesson behind them |
-| `PLAYBOOK.md` | the method: a weekly review loop, a week-by-week plan, 14 rules of thumb (laws), the records the watcher reads |
+| `PLAYBOOK.md` | the method: a step-back review loop that runs when progress stalls, a week-by-week plan, 14 rules of thumb (laws), the records the watcher reads |
 | `GLOSSARY.md` | the terms used across the docs, in plain English |
 | `LESSONS.md` | five competitions compared with winners' or top-team write-ups (one from the forum); 35 lessons (25 in the table + a 10-item checklist); priors by problem type |
 | `TOOLING.md` | 27 Kaggle and compute traps, symptom → fix |
