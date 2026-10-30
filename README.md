@@ -3,7 +3,7 @@
 
 I built this harness to run Claude Code as a solo Kaggle competitor. Its core idea: when a written rule failed to stop a mistake and a check was possible, I turned the rule into code. Scripts refuse GPU pushes and submissions until their checks pass, hooks block the direct CLI calls, and a watcher with no LLM raises alerts the agent must acknowledge.
 
-Kaggle, with earlier versions of this agent and my steering: silver (125th of 6,191) and two bronzes across five competitions of about 3,500–6,425 teams. This version is built from their failures and has not yet run a full competition; `examples/` replays two of them through it.
+Kaggle, with earlier versions of this agent and my steering: silver (125th of 6,191) and two bronzes across five competitions of about 3,500–6,299 teams. This version is built from their failures and has not yet run a full competition; `examples/` replays two of them through it.
 
 - **How you use it:** join a competition on kaggle.com, run `claude` in this repo and type `Join <slug>, deadline YYYY-MM-DD`. The agent scaffolds `competitions/<slug>/`, trains, and can push or submit only through the `kit/` scripts; you answer only a short list of owner decisions ([Quickstart](#quickstart)).
 - 127 offline tests run in CI; `bash tests/demo.sh` shows the gates refusing in seconds, with no Kaggle login.
@@ -41,7 +41,7 @@ tier 1 (events.log; the Stop hook sends the agent back to ack them):
 |---|---|---|---|
 | ROGII (well-log alignment, 6,191) | silver, 125th | hard-well gate, −0.622 private (above) | Particle filter aligning gamma-ray logs; confidence gate that switches to the well's own log where it fits better; code: [kaggle_geosteer](https://github.com/juliversa/kaggle_geosteer) |
 | BioHub (3-D cell tracking, 4,020) | bronze, 355th | the only late change that gained on private | One ILP linker on a public 3-D U-Net detector, replay-validated on unseen embryos |
-| RSNA knee (MRI, 12 findings, 6,425) | bronze, private AUC .943 | CV ranked all 4 finals in private order; own models only | ConvNeXt-T, per-finding attention; LLM report labels + image teacher; scanner-held-out folds |
+| RSNA knee (MRI, 12 findings, 6,299) | bronze, 322nd, private AUC .943 | CV ranked all 4 finals in private order; own models only | ConvNeXt-T, per-finding attention; LLM report labels + image teacher; scanner-held-out folds |
 
 Also: BirdCLEF+ (own HGNet SED model; Perch + ProtoSSM + SED ensemble) and an LLM maths-reasoning competition (gpt-oss-120b served with vLLM, tool-integrated reasoning, inverse-entropy voting), no medal.
 
